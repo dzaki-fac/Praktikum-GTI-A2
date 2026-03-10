@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
     glutInitWindowSize(800, 600);
-    glutCreateWindow("Primitive OpenGL");
+    glutCreateWindow("Dzaki Fathul 'Alim Cahyo'");
 
     init();
     glutDisplayFunc(display);

@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     glutInit(&argc, argv);
     glutInitWindowSize(640,480);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
-    glutCreateWindow("Titik");
+    glutCreateWindow("Dzaki Fathul 'Alim Cahyo");
 
     glutDisplayFunc(point);
 
