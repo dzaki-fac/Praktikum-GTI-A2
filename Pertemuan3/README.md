@@ -1,37 +1,37 @@
-NAMA : Dzaki Fathul 'Alim Cahyo
-NIM : 24060124130103
-Lab A2
+# NAMA : Dzaki Fathul 'Alim Cahyo
+# NIM : 24060124130103
+# Lab A2
 
 Pada program ini, terdapat dua metode penggerak: melalui Preset Pose (Emote) untuk gerakan instan, atau melalui Kontrol Manual untuk presisi tiap sendi.
 
-1. PRESET POSE (EMOTE)
+1. PRESET POSE (EMOTE)  
    Gunakan tombol berikut untuk mengubah posisi seluruh jari ke formasi tertentu secara otomatis:
-   V = Pose Netral : Mengembalikan semua sudut jari ke posisi 0 derajat (lurus sempurna).
-   Z = Pose Nunjuk: Menekuk semua jari kecuali jari telunjuk.
-   X = Pose Seru : Formasi jari kelingking dan telunjuk berdiri (Rock on).
-   C = Pose Genggam: Menekuk seluruh jari ke arah dalam telapak tangan.
+   - V = Pose Netral : Mengembalikan semua sudut jari ke posisi 0 derajat (lurus sempurna).
+   - Z = Pose Nunjuk: Menekuk semua jari kecuali jari telunjuk.
+   - X = Pose Seru : Formasi jari kelingking dan telunjuk berdiri (Rock on).
+   - C = Pose Genggam: Menekuk seluruh jari ke arah dalam telapak tangan.
    
-3. PROYEKSI MANUAL (HIERARKI)
-   Untuk menggerakkan sendi secara spesifik, gunakan urutan langkah berikut:
-     Seleksi Jari (Target):
-       1 = Jari Kelingking
-       2 = Jari Manis
-       3 = Jari Tengah
-       4 = Jari Telunjuk
-       5 = Ibu Jari (Jempol)
-     Gerakkan Sendi Jari:
-       S / s = Menekuk atau meluruskan Pangkal Jari (Shoulder jari).
-       E / e = Menekuk atau meluruskan Ujung Jari (Elbow jari).
+3. PROYEKSI MANUAL (HIERARKI)  
+   Untuk menggerakkan sendi secara spesifik, gunakan urutan langkah berikut:\
+   Seleksi Jari (Target):
+   - 1 = Jari Kelingking
+   - 2 = Jari Manis
+   - 3 = Jari Tengah
+   - 4 = Jari Telunjuk
+   - 5 = Ibu Jari (Jempol)\
+   Gerakkan Sendi Jari:
+   - S / s = Menekuk atau meluruskan Pangkal Jari (Shoulder jari).
+   - E / e = Menekuk atau meluruskan Ujung Jari (Elbow jari).
    
-4. KONTROL KAMERA & NAVIGASI
-   Program ini mendukung navigasi kamera penuh untuk melihat objek dari berbagai sudut:
-     Mouse Left Click & Drag: Rotasi bebas kamera (Orbit).
-     Tombol Panah (Arrow Keys): Menggeser posisi kamera (Atas, Bawah, Kiri, Kanan).
-     7 / 8: Kontrol Roll (Memiringkan sudut pandang kamera).
-     + / - : Zoom In dan Zoom Out.
-     ESC: Keluar dari program.
+5. KONTROL KAMERA & NAVIGASI  
+   Program ini mendukung navigasi kamera penuh untuk melihat objek dari berbagai sudut:  
+     Mouse Left Click & Drag: Rotasi bebas kamera (Orbit).  
+     Tombol Panah (Arrow Keys): Menggeser posisi kamera (Atas, Bawah, Kiri, Kanan).  
+     7 / 8: Kontrol Roll (Memiringkan sudut pandang kamera).  
+     +/ -: Zoom In dan Zoom Out.  
+     ESC: Keluar dari program.  
 
-5. SCREENSHOT
+7. SCREENSHOT
    Pose Netral
    <img width="1241" height="1119" alt="image" src="https://github.com/user-attachments/assets/97708573-3577-4504-a49a-85b8594ff55f" />
 
