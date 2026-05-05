@@ -1,21 +1,4 @@
-/*
- * CHICKEN CROSS THE ROAD 3D
- * Pure C + FreeGLUT
- *
- * Compile (Linux/Mac):
- *   gcc chicken_cross.c -o chicken_cross -lGL -lGLU -lglut -lm
- *
- * Compile (Windows MinGW):
- *   gcc chicken_cross.c -o Project1.exe -mwindows -lfreeglut -lopengl32 -lglu32 -lm
- *
- * Kontrol:
- *   W / Arrow Up    : Maju
- *   S / Arrow Down  : Mundur
- *   A / Arrow Left  : Kiri
- *   D / Arrow Right : Kanan
- *   R               : Restart
- *   ESC             : Keluar
- */
+// g++ main.cpp -o main -lfreeglut -lopengl32 -lglu32; .\main.exe
 
 #ifdef _WIN32
   #include <windows.h>
@@ -577,7 +560,7 @@ void update(int val) {
         }
 
         if (chicken.z >= ROAD_LEN / 2.0f - LANE_WIDTH / 2.0f - 0.3f) {
-            score = score + 500;
+            score = score + 1;
             gameWon = 1;
         }
     }
