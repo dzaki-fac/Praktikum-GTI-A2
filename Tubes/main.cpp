@@ -491,7 +491,7 @@ void display(void) {
 
     if (chicken.alive) {
         glPushMatrix();
-        glTranslatef(chicken.x, 0.5f, chicken.z);
+        glTranslatef(chicken.x, 0.5f, chicken.z); 
         drawChicken(chicken.bobAngle);
         glPopMatrix();
     }
@@ -560,7 +560,7 @@ void update(int val) {
         }
 
         if (chicken.z >= ROAD_LEN / 2.0f - LANE_WIDTH / 2.0f - 0.3f) {
-            score = score + 1;
+            score = score + 500;
             gameWon = 1;
         }
     }
