@@ -7,12 +7,15 @@
   #include <GL/glut.h>
 #endif
 
+
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
 #include "shapes.h"
+#include "chicken.h"
+#include "car.h"
 
 /* -- Konstanta --------------------------------------------------- */
 #define WINDOW_W      900
@@ -23,13 +26,7 @@
 #define CAR_SPEED_BASE 0.03f
 #define PI 3.14159265358979f
 
-/* -- Struct ------------------------------------------------------ */
-typedef struct {
-    float x, z;
-    float speed;
-    float r, g, b;
-    float width, panjang;
-} Car;
+
 
 typedef struct {
     float x, z;
@@ -50,6 +47,7 @@ static float ROAD_LEN;
 /* -- Texture IDs ------------------------------------------------- */
 static GLuint texLeaf = 0;
 static GLuint texBark = 0;
+static GLuint texGrass = 0;
 
 /* ================================================================
    BMP Loader sederhana (24-bit uncompressed BMP)
@@ -280,161 +278,31 @@ static void resetGame(void) {
 }
 
 
-/* -- Gambar Ayam ------------------------------------------------- */
-static void drawChicken(float bobAngle) {
-    float bob = (float)sin(bobAngle) * 0.08f;
+static void drawGroundTextured(float x1, float z1,
+                               float x2, float z2,
+                               float tileU, float tileV) {
 
-    glPushMatrix();
-
-    /* Badan */
-    glColor3f(0.95f, 0.9f, 0.6f);
-    drawBox(0.7f, 0.6f, 0.9f);
-
-    /* Kepala */
-    glPushMatrix();
-    glTranslatef(0, 0.55f + bob, 0.3f);
-    glColor3f(0.95f, 0.85f, 0.5f);
-    drawBox(0.45f, 0.4f, 0.45f);
-
-    /* Paruh */
-    glPushMatrix();
-    glTranslatef(0, -0.05f, 0.28f);
-    glColor3f(1.0f, 0.55f, 0.0f);
-    drawBox(0.15f, 0.1f, 0.15f);
-    glPopMatrix();
-
-    /* Mata kiri */
-    glPushMatrix();
-    glTranslatef(-0.17f, 0.09f, 0.1f);
-    glColor3f(0.1f, 0.1f, 0.1f);
-    drawBox(0.08f, 0.08f, 0.05f);
-    glPopMatrix();
-
-    /* Mata kanan */
-    glPushMatrix();
-    glTranslatef(0.17f, 0.09f, 0.1f);
-    glColor3f(0.1f, 0.1f, 0.1f);
-    drawBox(0.08f, 0.08f, 0.05f);
-    glPopMatrix();
-
-    glPopMatrix(); /* kepala */
-
-    /* Jengger */
-    glPushMatrix();
-    glTranslatef(0, 0.85f + bob, 0.3f);
-    glColor3f(1.0f, 0.1f, 0.1f);
-    drawBox(0.12f, 0.2f, 0.12f);
-    glPopMatrix();
-
-    /* Sayap kiri */
-    glPushMatrix();
-    glTranslatef(-0.42f, 0.05f, 0.0f);
-    glRotatef(-20, 0, 0, 1);
-    glColor3f(0.85f, 0.75f, 0.4f);
-    drawBox(0.15f, 0.45f, 0.7f);
-    glPopMatrix();
-
-    /* Sayap kanan */
-    glPushMatrix();
-    glTranslatef(0.42f, 0.05f, 0.0f);
-    glRotatef(20, 0, 0, 1);
-    glColor3f(0.85f, 0.75f, 0.4f);
-    drawBox(0.15f, 0.45f, 0.7f);
-    glPopMatrix();
-
-    /* Kaki kiri */
-    glPushMatrix();
-    glTranslatef(-0.15f, -0.38f, 0.0f);
-    glColor3f(1.0f, 0.55f, 0.0f);
-    drawBox(0.1f, 0.25f, 0.1f);
-    glPopMatrix();
-
-    /* Kaki kanan */
-    glPushMatrix();
-    glTranslatef(0.15f, -0.38f, 0.0f);
-    glColor3f(1.0f, 0.55f, 0.0f);
-    drawBox(0.1f, 0.25f, 0.1f);
-    glPopMatrix();
-
-    /* Ekor */
-    glPushMatrix();
-    glTranslatef(0, 0.2f, -0.52f);
-    glRotatef(35, 1, 0, 0);
-    glColor3f(0.7f, 0.6f, 0.3f);
-    drawBox(0.5f, 0.35f, 0.25f);
-    glPopMatrix();
-
-    glPopMatrix();
-}
-
-static void drawCar(const Car *c) {
-    int i;
-
-    float halfLength = c->panjang / 2.0f;
-    float halfWidth  = 0.9f / 2.0f;
-
-    float wx[2] = { halfLength - 0.2f, -(halfLength - 0.2f) };
-    float wz = halfWidth + 0.05f;
-
-    glPushMatrix();
-    glTranslatef(c->x, 0.35f, c->z);
-
-    /* BODY */
-    glColor3f(c->r, c->g, c->b);
-    drawBox(c->panjang, 0.35f, 0.9f);
-
-    /* KABIN */
-    glPushMatrix();
-        glTranslatef(-0.1f, 0.28f, 0.0f);
-        glColor3f(c->r * 0.7f, c->g * 0.7f, c->b * 0.7f);
-        drawBox(c->panjang * 0.6f, 0.28f, 0.7f);
-    glPopMatrix();
-
-    /* KACA */
-    glPushMatrix();
-        glTranslatef(halfLength * 0.3f, 0.3f, 0.0f);
-        glColor3f(0.6f, 0.8f, 1.0f);
-        drawBox(0.1f, 0.22f, 0.6f);
-    glPopMatrix();
-
-    /* RODA */
-    glColor3f(0.15f, 0.15f, 0.15f);
-    for (i = 0; i < 2; i++) {
-        glPushMatrix();
-            glTranslatef(wx[i], -0.2f, -wz);
-            drawBox(0.22f, 0.22f, 0.12f);
-        glPopMatrix();
-        glPushMatrix();
-            glTranslatef(wx[i], -0.2f, wz);
-            drawBox(0.22f, 0.22f, 0.12f);
-        glPopMatrix();
+    if (texGrass != 0) {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, texGrass);
+        glColor3f(1.0f, 1.0f, 1.0f);
+    } else {
+        glDisable(GL_TEXTURE_2D);
+        glColor3f(0.2f, 0.55f, 0.15f);
     }
 
-    float front = (c->speed > 0) ? 1.0f : -1.0f;
+    glBegin(GL_QUADS);
 
-    /* LAMPU DEPAN */
-    glColor3f(1.0f, 1.0f, 0.7f);
-    glPushMatrix();
-        glTranslatef(front * halfLength, 0.1f, -0.3f);
-        drawBox(0.05f, 0.1f, 0.15f);
-    glPopMatrix();
-    glPushMatrix();
-        glTranslatef(front * halfLength, 0.1f, 0.3f);
-        drawBox(0.05f, 0.1f, 0.15f);
-    glPopMatrix();
+    glNormal3f(0,1,0);
 
-    /* LAMPU BELAKANG */
-    glColor3f(1.0f, 0.2f, 0.2f);
-    glPushMatrix();
-        glTranslatef(-front * halfLength, 0.1f, -0.3f);
-        drawBox(0.05f, 0.1f, 0.15f);
-    glPopMatrix();
-    glPushMatrix();
-        glTranslatef(-front * halfLength, 0.1f, 0.3f);
-        drawBox(0.05f, 0.1f, 0.15f);
-    glPopMatrix();
+    glTexCoord2f(0,      0);      glVertex3f(x1, -0.01f, z1);
+    glTexCoord2f(tileU,  0);      glVertex3f(x2, -0.01f, z1);
+    glTexCoord2f(tileU,  tileV);  glVertex3f(x2, -0.01f, z2);
+    glTexCoord2f(0,      tileV);  glVertex3f(x1, -0.01f, z2);
 
-    glPopMatrix();
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
 }
 
 /* -- Gambar Dunia ------------------------------------------------ */
@@ -444,11 +312,11 @@ static void drawWorld(void) {
     float finZ   =  ROAD_LEN / 2.0f - LANE_WIDTH / 2.0f;
 
     /* Tanah luar */
-    glColor3f(0.2f, 0.55f, 0.15f);
-    glBegin(GL_QUADS);
-    glVertex3f(-50,-0.01f,-20); glVertex3f(50,-0.01f,-20);
-    glVertex3f( 50,-0.01f, 20); glVertex3f(-50,-0.01f, 20);
-    glEnd();
+    drawGroundTextured(
+    -50, -20,
+     50,  20,
+     20.0f, 20.0f
+    );  
 
     /* Lane per lane */
     for (i = 0; i < NUM_LANES; i++) {
@@ -749,6 +617,7 @@ int main(int argc, char **argv) {
     /* Load tekstur — file harus ada di direktori yang sama dengan .exe */
     texBark = loadBMP("bark.bmp");
     texLeaf = loadBMP("leaf.bmp");
+    texGrass = loadBMP("grass.bmp");
 
     resetGame();
 
