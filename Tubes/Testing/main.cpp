@@ -12,7 +12,6 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include "shapes.h"
 
 /* -- Konstanta --------------------------------------------------- */
 #define WINDOW_W      900
@@ -123,6 +122,8 @@ static GLuint loadBMP(const char *filename) {
     return texID;
 }
 
+/* -- Forward declarations ---------------------------------------- */
+static void drawBox(float w, float h, float d);
 
 /* ================================================================
    drawBoxTextured — kotak dengan UV mapping per sisi
@@ -279,6 +280,36 @@ static void resetGame(void) {
     spawnCars();
 }
 
+/* -- Gambar Kotak (tanpa tekstur, untuk entitas lain) ------------ */
+static void drawBox(float w, float h, float d) {
+    float hw = w/2.0f, hh = h/2.0f, hd = d/2.0f;
+    glBegin(GL_QUADS);
+        /* Atas */
+        glNormal3f(0,1,0);
+        glVertex3f(-hw, hh,-hd); glVertex3f( hw, hh,-hd);
+        glVertex3f( hw, hh, hd); glVertex3f(-hw, hh, hd);
+        /* Bawah */
+        glNormal3f(0,-1,0);
+        glVertex3f(-hw,-hh,-hd); glVertex3f(-hw,-hh, hd);
+        glVertex3f( hw,-hh, hd); glVertex3f( hw,-hh,-hd);
+        /* Depan */
+        glNormal3f(0,0,1);
+        glVertex3f(-hw,-hh, hd); glVertex3f( hw,-hh, hd);
+        glVertex3f( hw, hh, hd); glVertex3f(-hw, hh, hd);
+        /* Belakang */
+        glNormal3f(0,0,-1);
+        glVertex3f(-hw,-hh,-hd); glVertex3f(-hw, hh,-hd);
+        glVertex3f( hw, hh,-hd); glVertex3f( hw,-hh,-hd);
+        /* Kiri */
+        glNormal3f(-1,0,0);
+        glVertex3f(-hw,-hh,-hd); glVertex3f(-hw,-hh, hd);
+        glVertex3f(-hw, hh, hd); glVertex3f(-hw, hh,-hd);
+        /* Kanan */
+        glNormal3f(1,0,0);
+        glVertex3f( hw,-hh,-hd); glVertex3f( hw, hh,-hd);
+        glVertex3f( hw, hh, hd); glVertex3f( hw,-hh, hd);
+    glEnd();
+}
 
 /* -- Gambar Ayam ------------------------------------------------- */
 static void drawChicken(float bobAngle) {
