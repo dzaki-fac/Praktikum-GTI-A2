@@ -1,5 +1,5 @@
 #include <gl/glut.h>
-#include <gl/gl.h>
+#include <gl/gl.h>buatin run commandny dong
 #include <math.h>
 
 #define PI 3.1415926535898
