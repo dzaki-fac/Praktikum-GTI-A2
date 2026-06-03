@@ -1,4 +1,4 @@
-// g++ main.cpp -o main -lfreeglut -lopengl32 -lglu32; .\main.exe
+// g++ main.cpp Assets/*.cpp -o main -lfreeglut -lopengl32 -lglu32; .\main.exe
 
 #ifdef _WIN32
   #include <windows.h>
@@ -12,11 +12,11 @@
 #include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include "Assets\shapes.h"
-#include "Assets\chicken.h"
-#include "Assets\car.h"
-#include "Assets\tree.h"
-#include "Assets\texture.h"
+#include "Assets/shapes.h"
+#include "Assets/chicken.h"
+#include "Assets/car.h"
+#include "Assets/tree.h"
+#include "Assets/texture.h"
 #include "Assets/world.h"
 #include "Assets/ui.h"
 #include "Assets/constants.h"
@@ -25,33 +25,30 @@
 
 /* -- State Global ------------------------------------------------ */
 static Chicken chicken;
-static Car     cars[MAX_CARS];
-static int     numCars = 0;
+static World   world;
 
 static int   gameOver = 0;
-static int   gameWon  = 0;
 static int   score    = 0;
-static float ROAD_LEN;
+static float maxZ     = 0.0f;   /* posisi Z terjauh yang pernah dicapai ayam */
 
 /* -- Texture IDs ------------------------------------------------- */
 static GLuint texLeaf  = 0;
 static GLuint texBark  = 0;
 static GLuint texGrass = 0;
+static GLuint texRock  = 0;
 
 /* -- Callback Display -------------------------------------------- */
 void display(void) {
-    char    buf[64];
-    int     i;
+    char  buf[64];
+    int   i;
 
-    /* Posisi lampu — float[4], w=1 untuk positional light */
-    float lightPos[4] = {0.0f, 12.0f, 30.0f, 1.0f};
-    float planePoint[3]  = {0.0f,  0.0f, 0.0f};
-    float planeNormal[3] = {0.0f,  1.0f, 0.0f};
+    /* Cahaya selalu di depan ayam (offset +20 ke depan, tinggi 14) */
+    float lightPos[4]    = {0.0f, 14.0f, chicken.z + 20.0f, 1.0f};
+    float planePoint[3]  = {0.0f, 0.0f, chicken.z};
+    float planeNormal[3] = {0.0f, 1.0f, 0.0f};
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     glLoadIdentity();
-
-    
 
     /* Kamera mengikuti ayam */
     gluLookAt(
@@ -60,17 +57,16 @@ void display(void) {
         0, 1, 0
     );
 
-    /* Set posisi lampu SEBELUM gluLookAt agar tetap di world space */
     glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
 
-    /* Dunia (tanah, lane, tiang, pohon) */
-    drawWorld(ROAD_LEN, texGrass, texBark, texLeaf, lightPos);
+    /* Dunia dinamis */
+    drawWorld(&world, chicken.z, texGrass, texBark, texLeaf, texRock, lightPos);
 
-    /* Mobil — shadow + asli */
-    for (i = 0; i < numCars; i++)
-        renderCarWithShadow(lightPos, planePoint, planeNormal, &cars[i]);
+    /* Mobil */
+    for (i = 0; i < world.numCars; i++)
+        renderCarWithShadow(lightPos, planePoint, planeNormal, &world.cars[i]);
 
-    /* Ayam — shadow + asli */
+    /* Ayam */
     if (chicken.alive)
         renderChickenWithShadow(
             lightPos,
@@ -98,23 +94,11 @@ void display(void) {
                    "GAME OVER!", 1.0f, 0.0f, 0.0f);
         drawText2D(WINDOW_W/2 - 110, WINDOW_H/2,
                    "Ayammu ketabrak!", 1.0f, 0.6f, 0.6f);
-        drawText2D(WINDOW_W/2 - 110, WINDOW_H/2 - 35,
-                   "Tekan R untuk mulai lagi", 0.8f, 0.8f, 0.8f);
-
-        glEnable(GL_LIGHTING);
-        glEnable(GL_DEPTH_TEST);
-
-    /* Overlay Game Won */
-    } else if (gameWon) {
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_LIGHTING);
-
-        drawOverlay(0.5f, WINDOW_W, WINDOW_H);
-        drawText2D(WINDOW_W/2 - 140, WINDOW_H/2 + 30,
-                   "SELAMAT! AYAM BERHASIL!", 0.2f, 1.0f, 0.3f);
-        sprintf(buf, "Score: %d  |  Tekan R untuk lanjut", score);
-        drawText2D(WINDOW_W/2 - 150, WINDOW_H/2 - 10,
+        sprintf(buf, "Score akhir: %d", score);
+        drawText2D(WINDOW_W/2 - 110, WINDOW_H/2 - 30,
                    buf, 1.0f, 1.0f, 0.5f);
+        drawText2D(WINDOW_W/2 - 110, WINDOW_H/2 - 60,
+                   "Tekan R untuk mulai lagi", 0.8f, 0.8f, 0.8f);
 
         glEnable(GL_LIGHTING);
         glEnable(GL_DEPTH_TEST);
@@ -125,28 +109,24 @@ void display(void) {
 
 /* -- Timer / Update ---------------------------------------------- */
 void update(int val) {
-    int i;
     (void)val;
     glutTimerFunc(16, update, 0);
 
-    if (!gameOver && !gameWon) {
+    if (!gameOver) {
         chicken.bobAngle += 0.15f;
 
-        for (i = 0; i < numCars; i++) {
-            cars[i].x += cars[i].speed;
-            if (cars[i].x >  11.0f) cars[i].x = -11.0f;
-            if (cars[i].x < -11.0f) cars[i].x =  11.0f;
-        }
+        /* Update posisi terjauh */
+        if (chicken.z > maxZ) maxZ = chicken.z;
 
-        if (checkCollision(chicken, cars, numCars)) {
+        updateCars(&world);
+
+        if (checkCollision(chicken, &world)) {
             chicken.alive = 0;
             gameOver      = 1;
         }
 
-        if (chicken.z >= ROAD_LEN / 2.0f - LANE_WIDTH / 2.0f - 0.3f) {
-            score  += 500;
-            gameWon = 1;
-        }
+        /* Generate lane baru + hitung score */
+        updateWorld(&world, &chicken, &score);
     }
 
     glutPostRedisplay();
@@ -158,12 +138,12 @@ void keyboard(unsigned char key, int x, int y) {
     if (key == 27) exit(0);
 
     if (key == 'r' || key == 'R') {
-        if (gameOver) score = 0;
-        resetGame(&chicken, &gameOver, &gameWon, &score, &ROAD_LEN, cars, &numCars);
+        resetGame(&chicken, &gameOver, &score, &world);
+        maxZ = chicken.z;
         return;
     }
 
-    if (gameOver || gameWon) return;
+    if (gameOver) return;
 
     switch (key) {
         case 'w': case 'W': chicken.z += LANE_WIDTH; break;
@@ -174,13 +154,13 @@ void keyboard(unsigned char key, int x, int y) {
 
     if (chicken.x < -9.5f) chicken.x = -9.5f;
     if (chicken.x >  9.5f) chicken.x =  9.5f;
-    if (chicken.z < -ROAD_LEN / 2.0f + 0.1f)
-        chicken.z = -ROAD_LEN / 2.0f + 0.1f;
+    if (chicken.z < maxZ - 3.0f * LANE_WIDTH)
+        chicken.z = maxZ - 3.0f * LANE_WIDTH;
 }
 
 void specialKey(int key, int x, int y) {
     (void)x; (void)y;
-    if (gameOver || gameWon) return;
+    if (gameOver) return;
 
     switch (key) {
         case GLUT_KEY_UP:    chicken.z += LANE_WIDTH; break;
@@ -191,9 +171,9 @@ void specialKey(int key, int x, int y) {
 
     if (chicken.x < -9.5f) chicken.x = -9.5f;
     if (chicken.x >  9.5f) chicken.x =  9.5f;
+    if (chicken.z < maxZ - 3.0f * LANE_WIDTH)
+        chicken.z = maxZ - 3.0f * LANE_WIDTH;
 }
-
-/* -- Reshape ----------------------------------------------------- */
 void reshape(int w, int h) {
     if (h == 0) h = 1;
     glViewport(0, 0, w, h);
@@ -211,7 +191,6 @@ int main(int argc, char **argv) {
     srand((unsigned)time(NULL));
 
     glutInit(&argc, argv);
-    /* GLUT_STENCIL wajib ada untuk shadow stencil buffer */
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL);
     glutInitWindowSize(WINDOW_W, WINDOW_H);
     glutInitWindowPosition(100, 80);
@@ -225,13 +204,16 @@ int main(int argc, char **argv) {
     glShadeModel(GL_SMOOTH);
     glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-    glClearColor(0.52f, 0.80f, 0.98f, 1.0f);
+    /* Warna background = warna horizon fog, diset sekali di sini
+       (drawWorld akan update tiap frame via glClearColor juga) */
+    glClearColor(0.85f, 0.92f, 1.0f, 1.0f);
 
     texBark  = loadBMP("texture/bark.bmp");
     texLeaf  = loadBMP("texture/leaf.bmp");
     texGrass = loadBMP("texture/grass.bmp");
+    texRock  = loadBMP("texture/rock.bmp");
 
-    resetGame(&chicken, &gameOver, &gameWon, &score, &ROAD_LEN, cars, &numCars);
+    resetGame(&chicken, &gameOver, &score, &world);
 
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
